@@ -314,6 +314,56 @@ to remove all other changes after jumping many steps back then <br>
 	1 git reset --hrad (hash code)<br>
 fork means exeect copy of the repo<br>
 step>>select any project>>fork>.save in ypur repo>>done<br>
+/////////////////////////////////////////////////junit tastcase/////////////////
+package network;<br>
+
+public class circle {<br>
+	private float radius;<br>
+
+	public float getRadius() {<br>
+		return radius;<br>
+	}<br>
+
+	public void setRadius(float radius) {<br>
+		this.radius = radius;<br>
+	}<br>
+	public void area()<br>
+	{<br>
+		System.out.println("Area of circle is: " + 3.14*this.radius*this.radius);<br>
+		}<br>
+
+}<br>
+
+
+package network;<br>
+
+import static org.junit.jupiter.api.Assertions.*;<br>
+
+
+import org.junit.jupiter.api.AfterEach;<br>
+import org.junit.jupiter.api.BeforeEach;<br>
+import org.junit.jupiter.api.Test;<br>
+
+class networktestcase {<br>
+
+	@BeforeEach<br>
+	/*void setUp() throws Exception {<br>
+	}<br>
+
+	@AfterEach<br>
+	void tearDown() throws Exception {<br>
+	}*<br>
+
+	@Test
+	void test() {<br>
+//		fail("Not yet implemented");<br> 
+		circle c = new circle();<br>
+		c.setRadius(6);<br>
+		c.area();<br>
+	}<br>
+
+}
+
 
 /////////////////////////////////////////CN//////////////////////////////////////////
 Write a C Program to simulate Character Stuffing with<br>
