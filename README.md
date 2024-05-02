@@ -1,350 +1,288 @@
-const express = require('express')
-const cors = require('cors')
-const app = express()
-const port = 5000
-app.use(express.json())
-app.use(cors())
-const mongodb = require('mongodb')
-const MongoClient = mongodb.MongoClient
-const connectionURL = 'mongodb://127.0.0.1:27017'
-const databaseName = 'Students'
+/////////////////DBHelper///////////////////////////////
+package com.example.db1;
 
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 
-app.post('/insert', (req, res) => {
-    MongoClient.connect(connectionURL, { useNewUrlParser: true }, (error, client) => {
-        if (error) {
-            return console.log('Unable to connect to database!')
-        }
-        const db = client.db(databaseName)
-        db.collection('studentDetails').insertOne({
-            s_name:req.body.s_name,
-            s_class:req.body.s_class,
-            total_marks:req.body.total_marks
-        })
-    })
-    
-    const posted=[{posted:'Yes'}];
-    res.send(posted);
-    res.redirect('/display');
-});
+import androidx.annotation.Nullable;
 
-
-app.get('/display', (req, res) => {
-    MongoClient.connect(connectionURL, { useNewUrlParser: true }, (error, client) => {
-        if (error) {
-            return console.log('Unable to connect to database!')
-        }
-      const db = client.db(databaseName)
-      db.collection('studentDetails').find().toArray(function(err, results) {
-        console.log(results)
-        res.send(results)
-          })
-    })
-});
-
-
-app.post('/delete', (req, res) => {
-    console.log(req.body.student_to_delete)
-    MongoClient.connect(connectionURL, { useNewUrlParser: true }, (error, client) => {
-        if (error) {
-            return console.log('Unable to connect to database!')
-        }
-        const db = client.db(databaseName)
-        const myquery = { s_name:req.body.student_to_delete};
-        db.collection('studentDetails').deleteOne(myquery,function(err, res) {
-            if (err) throw err;
-            console.log("student details deleted!");
-          });
-        
-    })
-    const posted=[{posted:'Yes'}];
-    res.send(posted);
-});
-
-
-
-app.post('/update', (req, res) => {
-    console.log(req.body.student_to_update)
-    console.log(req.body.new_class)
-    console.log(req.body.new_total_marks)
-    MongoClient.connect(connectionURL, { useNewUrlParser: true }, (error, client) => {
-        if (error) {
-            return console.log('Unable to connect to database!')
-        }
-        const db = client.db(databaseName)
-        const myquery = { s_name:req.body.student_to_update};
-        const newvalues = { $set: {
-            s_class:req.body.new_class,
-            total_marks:req.body.new_total_marks
-        } };
-        db.collection('studentDetails').updateOne(myquery, newvalues, function(err, res) {
-            if (err) throw err;
-            console.log("student details updated");
-          });
-        
-    })
-    const posted=[{posted:'Yes'}];
-    res.send(posted);
-});
-
-//search student with marks
-app.post('/search', (req, res) => {
-    MongoClient.connect(connectionURL, { useNewUrlParser: true }, (error, client) => {
-        if (error) {
-            return console.log('Unable to connect to database!')
-        }
-      const db = client.db(databaseName)
-      db.collection('studentDetails').find().toArray(function(err, results) {
-        console.log(results)
-        res.send(results)
-          })
-    })
-});
-
-app.listen(port, () => console.log(`App listening on port ${port}!`))
-////////////////////////////////server.js/////////////////////
-import React, { Component } from "react";
-import axios from "axios";
-
-class Create extends Component {
-  state = {
-    s_name:"",
-    s_class:"",
-    total_marks:null
-  };
-
-  OnChange=e=>{
-    this.setState({
-        [e.target.name]:e.target.value
-    })
-  }
-  
-  handleSubmit = e => {
-    e.preventDefault();
-    const data = {
-        s_name:this.state.s_name,
-        s_class:this.state.s_class,
-        total_marks:this.state.total_marks
-    };
-    axios
-      .post("http://127.0.0.1:5000/Create", data)
-      .then(res => console.log(res))
-      .catch(err => console.log(err));
-  };
- 
- render() {
-    return (
-      <div>
-        <form  onSubmit={this.handleSubmit}>
-         <label>Student Name</label>
-          <input
-            type="text"  name="s_name" value={this.state.s_name} onChange={this.OnChange}
-            required
-          />
-            <br/>
-            <label>Class</label>
-          <input
-             type="text"  name="s_class" value={this.state.s_class} onChange={this.OnChange}
-            required
-          />
-          <br/>
-           <label>Total marks</label>
-          <input
-             type="number"  name="total_marks" value={this.state.total_marks} onChange={this.OnChange}
-            required
-          />
-         <br/>
-          <button type="submit">submit</button>
-        </form>
-      </div>
-    );
-  }
-}
-
-
-export default Create;
-/////////////////////////////create.jsx////////////////////////////
-  import React from 'react'
-import axios from 'axios'
-class Display extends React.Component{
-constructor(props){
-    super(props);
-    this.state={Data: []}
-}
-componentDidMount(){
-    axios.get('http://127.0.0.1:5000/display')
-    .then((res)=>{
-        const list = res.data;
-        this.setState({ Data: list})
-    });
-}
-render()
-{
-    return(
-        <table border="1px">
-            <tr>
-                <th>Name</th><th>Class</th><th>Total Marks</th>
-            </tr>
-            {this.state.Data.map((i) => {
-                return (
-                    <tr key={i._id}>
-                        <td>{i.s_name}</td>
-                        <td>{i.s_class}</td>
-                        <td>{i.total_marks}</td>
-                    </tr>
-                )
-            })}
-        </table>    )
-}}
-export default Display
-///////////////////////////Display.jsx////////////////////////////////
-import React, { Component } from "react";
-import axios from "axios";
-
-class Update extends Component {
-  state = {
-    student_to_update:"",
-    new_class:"",
-    new_total_marks:null
-  };
-
-  OnChange=e=>{
-    this.setState({
-        [e.target.name]:e.target.value
-    })
-  }
-  handleSubmit = e => {
-    e.preventDefault();
-    const data = {
-        student_to_update:this.state.student_to_update,
-        new_class:this.state.new_class,
-        new_total_marks:this.state.new_total_marks
-    };
-    axios
-      .post("http://127.0.0.1:5000/update", data)
-      .then(res => console.log(res))
-      .catch(err => console.log(err));
-  };
- 
- render() {
-    return (
-      <div>
-        <form  onSubmit={this.handleSubmit}>
-         <label>Enter Name</label>
-          <input
-             type="text"  name="student_to_update" value={this.state.student_to_update} onChange={this.OnChange}
-            required
-          />
-          <br/>
-          <label>Enter class </label>
-          <input
-         type="text"  name="new_class" value={this.state.new_class} onChange={this.OnChange}
-            required
-          />
-          <br/>
-          <label>Enter total marks</label>
-          <input
-             type="number"  name="new_total_marks" value={this.state.new_total_marks} onChange={this.OnChange}
-            required
-          />
-         <br/>
-          <button type="submit">Update</button>
-        </form>
-      </div>
-    );
-  }
-}
-
-
-export default Update
-///////////////////////////update.jsx///////////////////////
-import React from 'react'
-import axios from 'axios'
-
-class DeleteCourse extends React.Component{
-    state={
-        student_to_delete:""
-    }
-    onDelete=e=>{
-        this.setState(
-            {student_to_delete:e.target.value}
-        )
-    }
-    
-    handleSubmit=e=>{
-        e.preventDefault();
-        const data={
-            student_to_delete:this.state.student_to_delete
-        }
-        axios.post("http://127.0.0.1:5000/delete",data)
-        .then(res=>console.log(res))
-        .catch(err=>console.log(err))
+public class DBhelper extends SQLiteOpenHelper {
+    public static final String dbname = "MyDATABASE";
+    public DBhelper(Context context) {
+        super(context, dbname, null, 1);
     }
 
-    render(){
-        return(
-            <form onSubmit={this.handleSubmit}>
-                <label>Enter Name: </label>
-                <input
-                    type='text'
-                    value={this.state.student_to_delete}
-                    onChange={this.onDelete}
-                    required
-                />
-                <button type='submit'>Delete</button>
-            </form>
-        )
+    @Override
+    public void onCreate(SQLiteDatabase db) {
+
+        db.execSQL("create Table userdata(name Text primary key, age Text )");
+
     }
+
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        db.execSQL("drop Table if exists userdata");
+    }
+
+    public  Boolean insertUser(String name, String age){
+        SQLiteDatabase db=getWritableDatabase();
+
+        ContentValues con= new ContentValues();
+        con.put("name",name);
+        con.put("age",age);
+        long res=db.insert("userdata",null,con);
+        if(res==-1){
+            return false;
+        }
+        else{
+            return true;
+        }
+
+
+    }
+
+    public  Boolean updateUser(String name, String age){
+        SQLiteDatabase db=getWritableDatabase();
+
+        ContentValues con= new ContentValues();
+        con.put("age",age);
+        Cursor cur=db.rawQuery("Select * from userdata where name=?",new String[]{name});
+        if(cur.getCount()>0){
+            long result= db.update("userdata",con,"name=?",new String[]{name});
+            if(result==-1){
+                return false;
+            }
+            else{
+                return true;
+            }
+        }
+        else{
+            return false;
+        }
+    }
+
+    public  Boolean deleteUser(String name){
+        SQLiteDatabase db=getWritableDatabase();
+
+        ContentValues con= new ContentValues();
+        Cursor cur=db.rawQuery("Select * from userdata where name=?",new String[]{name});
+        if(cur.getCount()>0){
+            long result= db.delete("userdata","name=?",new String[]{name});
+            if(result==-1){
+                return false;
+            }
+            else{
+                return true;
+            }
+        }
+        else{
+            return false;
+        }
+    }
+
+    public Cursor Display(){
+        SQLiteDatabase DB=getWritableDatabase();
+
+        Cursor cur=DB.rawQuery("Select * from userdata",null);
+        return cur;
+    }
+
 }
 
-export default DeleteCourse;
-//////////////////////////////delete.jsx////////////////////////////////
-import React from 'react'
-import { NavLink } from 'react-router-dom'
-const Navbar = () =>{
-    return(
-<nav >
-    <div >
-<ul className="right">
-            <li><NavLink to="/insert">Insert</NavLink></li>
-            <li><NavLink to="/display">Display</NavLink></li>
-            <li><NavLink to="/delete">Delete</NavLink></li>
-            <li><NavLink to="/update">Update</NavLink></li>
-       </ul>
-    </div>
-</nav>    )
+
+/////////////////////////////////MainActivity.java//////////////////////////////////////////
+package com.example.db1;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.database.Cursor;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+public class MainActivity extends AppCompatActivity {
+
+    EditText name,age;
+    Button insert,update,delete,view;
+
+    DBhelper Db;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        name= findViewById(R.id.name);
+        age= findViewById(R.id.age);
+
+
+        insert= findViewById(R.id.btnInsert);
+        update= findViewById(R.id.btnUpdate);
+        delete= findViewById(R.id.btnDelete);
+        view= findViewById(R.id.btnView);
+
+        Db= new DBhelper(this);
+
+        insert.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                String nameText= name.getText().toString();
+                String ageText=age.getText().toString();
+
+                Boolean check=Db.insertUser(nameText,ageText);
+                if(check){
+                    Toast.makeText(MainActivity.this, "inserted", Toast.LENGTH_SHORT).show();
+                }
+                else{
+                    Toast.makeText(MainActivity.this, "no inserted", Toast.LENGTH_SHORT).show();
+                }
+
+
+            }
+        });
+
+        update.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String nameText= name.getText().toString();
+                String ageText=age.getText().toString();
+                Boolean check=Db.updateUser(nameText,ageText);
+                if(check){
+                    Toast.makeText(MainActivity.this, "updated", Toast.LENGTH_SHORT).show();
+                }
+                else{
+                    Toast.makeText(MainActivity.this, "no updated", Toast.LENGTH_SHORT).show();
+                }
+
+
+            }
+        });
+
+        delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String nameText= name.getText().toString();
+
+                Boolean check=Db.deleteUser(nameText);
+                if(check){
+                    Toast.makeText(MainActivity.this, "deleted", Toast.LENGTH_SHORT).show();
+                }
+                else{
+                    Toast.makeText(MainActivity.this, "no delete", Toast.LENGTH_SHORT).show();
+                }
+
+
+            }
+        });
+
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Cursor cur=Db.Display();
+
+                if(cur.getCount()>0){
+                    StringBuffer buffer = new StringBuffer();
+                    while(cur.moveToNext()){
+                        buffer.append(cur.getString(0)+"\n");
+                        buffer.append(cur.getString(1)+"\n");
+
+                    }
+                    Toast.makeText(MainActivity.this, buffer.toString(), Toast.LENGTH_SHORT).show();
+                }
+                else{
+                    Toast.makeText(MainActivity.this, "no display", Toast.LENGTH_SHORT).show();
+                }
+
+
+            }
+        });
+
+
+
+
+    }
+
 }
 
 
-export default Navbar
-//////////////////navbar.jsx/////////////////////
-import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import './App.css';
+/////////////////////xml file////////////////////////////////
 
-import Navbar from './component/ISA2/navbar';
-import Create from './component/ISA2/Insertion';
-import Display from './component/ISA2/Selection';
-import DeleteCourse from './component/ISA2/deletion';
-import Update from './component/ISA2/Updation';
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="10dp"
+    tools:context=".MainActivity">
 
-
-function App() {
-  return (
-    <BrowserRouter>
-    <div>
-      <Navbar />
-      <Routes>
-        <Route exact path="/insert" element={<Create/>} />
-        <Route exact path="/display" element={<Display/>} />
-        <Route exact path="/delete" element={<DeleteCourse/>} />
-        <Route exact path="/update" element={<Update/>} />
-      </Routes>
-    </div>
-    </BrowserRouter>
-  );
-}
+    <TextView
+        android:id="@+id/texttitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Please enter the details below"
+        android:textSize="24dp"/>
+    <EditText
+        android:id="@+id/name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Name"
+        android:textSize="24dp"
+        android:layout_below="@+id/texttitle"
+        android:inputType="textPersonName"
+        />
 
 
-export default App;
-/////////////////app.jsx////////////////////////
+
+    <EditText
+        android:id="@+id/age"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Date of birth"
+        android:textSize="24dp"
+        android:layout_below="@+id/name"
+        android:inputType="number"
+        />
+
+    <Button
+        android:id="@+id/btnInsert"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="24dp"
+        android:text="Insert"
+
+        android:layout_below="@+id/age"/>
+    <Button
+        android:id="@+id/btnUpdate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="24dp"
+        android:text="Update"
+
+        android:layout_below="@+id/btnInsert"/>
+    <Button
+        android:id="@+id/btnDelete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="24dp"
+        android:text="Delete"
+
+        android:layout_below="@+id/btnUpdate"/>
+    <Button
+        android:id="@+id/btnView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="24dp"
+        android:text="Display"
+
+        android:layout_below="@+id/btnDelete"/>
+
+</RelativeLayout>
+
+
